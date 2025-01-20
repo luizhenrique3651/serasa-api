@@ -1,6 +1,7 @@
 package com.luiz.serasa.controller;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -15,8 +16,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.luiz.serasa.entity.Pessoa;
-import com.luiz.serasa.repository.PessoaRepository;
 import com.luiz.serasa.service.PessoaService;
+import com.luiz.serasa.service.ViaCepService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -27,7 +28,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 public class PessoaController {
 
     @Autowired
-    private PessoaRepository pessoaRepository;
+    private ViaCepService viaCepService
+    ;
 
     @Autowired
     private PessoaService pessoaService;
@@ -44,6 +46,18 @@ public class PessoaController {
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     @PostMapping
     public void savePessoa(@RequestBody Pessoa pessoa) {
+        // Buscar endereço pelo CEP
+        Map<String, String> endereco = viaCepService.getEnderecoByCep(pessoa.getCep());
+
+        if (endereco == null || endereco.containsKey("erro")) {
+            throw new RuntimeException("CEP inválido ou não encontrado.");
+        }
+
+        pessoa.setEstado(endereco.get("uf"));
+        pessoa.setCidade(endereco.get("localidade"));
+        pessoa.setBairro(endereco.get("bairro"));
+        pessoa.setLogradouro(endereco.get("logradouro"));
+
         pessoaService.save(pessoa);
     }
 
@@ -77,7 +91,7 @@ public class PessoaController {
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     @GetMapping("/byNome")
     public Pessoa loadByNome(@RequestParam String nome) {
-        return pessoaRepository.findByNome(nome)
+        return pessoaService.findByNome(nome)
             .orElseThrow(() -> new RuntimeException("Pessoa não encontrada"));
     }
 }
