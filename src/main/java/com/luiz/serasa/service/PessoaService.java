@@ -59,4 +59,8 @@ public class PessoaService {
             throw new RuntimeException("Pessoa não encontrada com o ID: " + id);
         }
     }
+    
+    public Optional<Pessoa> findByNome(String nome){
+    	return pessoaRepository.findByNome(nome);
+    }
 }
