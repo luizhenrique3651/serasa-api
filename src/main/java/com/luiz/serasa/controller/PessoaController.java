@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.luiz.serasa.dto.PessoaRequestDTO;
+import com.luiz.serasa.dto.PessoaResponseDTO;
 import com.luiz.serasa.entity.Pessoa;
 import com.luiz.serasa.service.PessoaService;
 import com.luiz.serasa.service.ViaCepService;
@@ -28,8 +30,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 public class PessoaController {
 
     @Autowired
-    private ViaCepService viaCepService
-    ;
+    private ViaCepService viaCepService;
 
     @Autowired
     private PessoaService pessoaService;
@@ -37,27 +38,16 @@ public class PessoaController {
     @Operation(description = "Carrega todos os objetos de Pessoa do banco.")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     @GetMapping
-    public List<Pessoa> loadAll() {
-        return pessoaService.findAll();
+    public List<PessoaResponseDTO> loadAll() {
+        return pessoaService.findAll().stream().map(PessoaResponseDTO::new).toList();
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Pessoa salva com sucesso")})
     @Operation(description = "Salva uma nova Pessoa no banco.")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     @PostMapping
-    public void savePessoa(@RequestBody Pessoa pessoa) {
-        // Buscar endereço pelo CEP
-        Map<String, String> endereco = viaCepService.getEnderecoByCep(pessoa.getCep());
-
-        if (endereco == null || endereco.containsKey("erro")) {
-            throw new RuntimeException("CEP inválido ou não encontrado.");
-        }
-
-        pessoa.setEstado(endereco.get("uf"));
-        pessoa.setCidade(endereco.get("localidade"));
-        pessoa.setBairro(endereco.get("bairro"));
-        pessoa.setLogradouro(endereco.get("logradouro"));
-
+    public void savePessoa(@RequestBody PessoaRequestDTO pessoa) {
+    	//implementação da busca de endereço pelo cep está direto no service
         pessoaService.save(pessoa);
     }
 
@@ -68,8 +58,8 @@ public class PessoaController {
     @Operation(description = "Atualiza uma Pessoa no banco.")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     @PutMapping("/{id}")
-    public void updatePessoa(@PathVariable Long id, @RequestBody Pessoa pessoaAtualizada) {
-        pessoaService.update(id, pessoaAtualizada);
+    public void updatePessoa(@PathVariable Long id, @RequestBody PessoaRequestDTO pessoaAtualizada) {    	
+       pessoaService.update(id, new Pessoa(pessoaAtualizada));
     }
 
     @ApiResponses(value = {
