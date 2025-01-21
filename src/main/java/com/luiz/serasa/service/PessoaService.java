@@ -1,11 +1,13 @@
 package com.luiz.serasa.service;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.luiz.serasa.dto.PessoaRequestDTO;
 import com.luiz.serasa.entity.Pessoa;
 import com.luiz.serasa.repository.PessoaRepository;
 
@@ -14,6 +16,9 @@ public class PessoaService {
 
 
     private final PessoaRepository pessoaRepository;
+    
+    @Autowired
+    private ViaCepService viaCepService;
 
     @Autowired
     public PessoaService(PessoaRepository pessoaRepository) {
@@ -28,8 +33,24 @@ public class PessoaService {
         return pessoaRepository.findById(id);
     }
 
-    public Pessoa save(Pessoa pessoa) {
-        return pessoaRepository.save(pessoa);
+    public Pessoa save(PessoaRequestDTO pessoa) {
+        // Buscar endereço pelo CEP
+        Map<String, String> endereco = viaCepService.getEnderecoByCep(pessoa.cep());
+
+        if (endereco == null || endereco.containsKey("erro")) {
+            throw new RuntimeException("CEP inválido ou não encontrado.");
+        }
+        //cria um obj de Pessoa baseada no DTO, e posteriormente preenche os campos de endereço pegos da API viaCep
+        Pessoa pessoaSalva = new Pessoa(pessoa);
+
+        
+        pessoaSalva.setEstado(endereco.get("uf"));
+        pessoaSalva.setCidade(endereco.get("localidade"));
+        pessoaSalva.setBairro(endereco.get("bairro"));
+        pessoaSalva.setLogradouro(endereco.get("logradouro"));
+
+        
+        return pessoaRepository.save(pessoaSalva);
     }
 
     public Pessoa update(Long id, Pessoa pessoaAtualizada) {
@@ -45,7 +66,7 @@ public class PessoaService {
             pessoa.setLogradouro(pessoaAtualizada.getLogradouro() != null ? pessoaAtualizada.getLogradouro() : pessoa.getLogradouro());
             pessoa.setTelefone(pessoaAtualizada.getTelefone() != null ? pessoaAtualizada.getTelefone() : pessoa.getTelefone());
             pessoa.setScore(pessoaAtualizada.getScore() != null ? pessoaAtualizada.getScore() : pessoa.getScore());
-            return pessoaRepository.save(pessoa);
+            return save(new PessoaRequestDTO(pessoa));
         } else {
             throw new RuntimeException("Pessoa não encontrada com o ID: " + id);
         }
