@@ -1,5 +1,7 @@
 package com.luiz.serasa.entity;
 
+import com.luiz.serasa.dto.PessoaRequestDTO;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -32,5 +34,13 @@ public class Pessoa {
 	String telefone;
 	@Column
 	Integer score;
+	
+	public Pessoa(PessoaRequestDTO data) {
+		this.nome = data.nome();
+		this.idade = data.idade();
+		this.cep = data.cep();
+		this.telefone = data.telefone();
+		this.score = data.score();
+	}
 	
 }
