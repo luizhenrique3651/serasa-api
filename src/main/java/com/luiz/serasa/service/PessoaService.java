@@ -32,9 +32,9 @@ public class PessoaService {
     
     public Page<Pessoa> findAllPaginated(String nome, Integer idade, String cep, int page, int size) {
         Specification<Pessoa> spec = Specification
-                .where(PessoaSpecification.nomeContains(nome))
-                .and(PessoaSpecification.idadeEquals(idade))
-                .and(PessoaSpecification.cepEquals(cep));
+                .where(nome != null ? PessoaSpecification.nomeContains(nome) : null)
+                .and(idade != null ? PessoaSpecification.idadeEquals(idade) : null)
+                .and(cep != null ? PessoaSpecification.cepEquals(cep) : null);
 
         Pageable pageable = PageRequest.of(page, size);
         return pessoaRepository.findAll(spec, pageable);
@@ -97,6 +97,9 @@ public class PessoaService {
     }
     
     public Optional<Pessoa> findByNome(String nome){
-    	return pessoaRepository.findByNome(nome);
-    }
-}
+        if (nome == null || nome.trim().isEmpty()) {
+            throw new IllegalArgumentException("Nome não pode ser nulo ou vazio.");
+        }
+        return pessoaRepository.findByNome(nome);
+    }    }
+
