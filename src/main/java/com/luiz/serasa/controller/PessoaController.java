@@ -1,9 +1,9 @@
 package com.luiz.serasa.controller;
 
 import java.util.List;
-import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,6 +40,20 @@ public class PessoaController {
     @GetMapping
     public List<PessoaResponseDTO> loadAll() {
         return pessoaService.findAll().stream().map(PessoaResponseDTO::new).toList();
+    }
+    
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Lista de pessoas retornada com sucesso")})
+    @Operation(description = "Retorna uma lista de pessoas paginada e com filtros opcionais (nome, idade, cep).")
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
+    @GetMapping("/paginado")
+    public Page<Pessoa> getPessoasPaginadas(
+            @RequestParam(required = false) String nome,
+            @RequestParam(required = false) Integer idade,
+            @RequestParam(required = false) String cep,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return pessoaService.findAllPaginated(nome, idade, cep, page, size);
     }
 
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Pessoa salva com sucesso")})

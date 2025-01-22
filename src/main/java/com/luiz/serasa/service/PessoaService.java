@@ -5,11 +5,16 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import com.luiz.serasa.dto.PessoaRequestDTO;
 import com.luiz.serasa.entity.Pessoa;
 import com.luiz.serasa.repository.PessoaRepository;
+import com.luiz.serasa.specification.PessoaSpecification;
 
 @Service
 public class PessoaService {
@@ -23,6 +28,16 @@ public class PessoaService {
     @Autowired
     public PessoaService(PessoaRepository pessoaRepository) {
         this.pessoaRepository = pessoaRepository;
+    }
+    
+    public Page<Pessoa> findAllPaginated(String nome, Integer idade, String cep, int page, int size) {
+        Specification<Pessoa> spec = Specification
+                .where(PessoaSpecification.nomeContains(nome))
+                .and(PessoaSpecification.idadeEquals(idade))
+                .and(PessoaSpecification.cepEquals(cep));
+
+        Pageable pageable = PageRequest.of(page, size);
+        return pessoaRepository.findAll(spec, pageable);
     }
 
     public List<Pessoa> findAll() {
