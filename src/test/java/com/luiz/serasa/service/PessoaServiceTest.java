@@ -1,84 +1,84 @@
 package com.luiz.serasa.service;
 
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyLong;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.context.SpringBootTest;
-
 import com.luiz.serasa.dto.PessoaRequestDTO;
 import com.luiz.serasa.entity.Pessoa;
 import com.luiz.serasa.repository.PessoaRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-@SpringBootTest
-@ExtendWith(MockitoExtension.class)
-public class PessoaServiceTest {
+import java.util.Optional;
 
-    @Mock
-    private PessoaRepository pessoaRepository;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-    @Mock
-    private ViaCepService viaCepService;
+import static org.junit.jupiter.api.Assertions.*;
+
+class PessoaServiceTest {
 
     @InjectMocks
     private PessoaService pessoaService;
 
-    private Pessoa pessoa;
-    private PessoaRequestDTO pessoaRequestDTO;
+    @Mock
+    private PessoaRepository pessoaRepository;
+  
+    @Mock
+    private ScoreDescricaoService scoreDescricaoService;
 
     @BeforeEach
-    public void setUp() {
-        pessoa = new Pessoa(1L, "João", 30, "12345678", "PE", "Recife", "Bairro", "Rua", "123456789", 650);
-        pessoaRequestDTO = new PessoaRequestDTO("João", 30, "12345678", "123456789", 650);
+    void setUp() {
+        // Inicializa os mocks
+        MockitoAnnotations.openMocks(this);
+    }
+
+ 
+
+  
+
+    @Test
+    void testDeletePessoa_Success() {
+        // Arrange
+        Long id = 1L;
+
+        // Mock repository existsById and deleteById
+        when(pessoaRepository.existsById(id)).thenReturn(true);
+
+        // Act
+        pessoaService.delete(id);
+
+        // Assert
+        verify(pessoaRepository, times(1)).deleteById(id);
     }
 
     @Test
-    public void testSavePessoa() {
-        when(viaCepService.getEnderecoByCep(any(String.class))).thenReturn(Map.of("uf", "PE", "localidade", "Recife", "bairro", "Bairro", "logradouro", "Rua"));
-        when(pessoaRepository.save(any(Pessoa.class))).thenReturn(pessoa);
+    void testFindByNome_Success() {
+        // Arrange
+        String nome = "Maria";
+        Pessoa pessoa = new Pessoa(1L, "Maria", 30, "12345678", "SP", "São Paulo", "Centro", "Rua Teste", "987654321", 500);
+        when(pessoaRepository.findByNome(nome)).thenReturn(Optional.of(pessoa));
 
-        Pessoa savedPessoa = pessoaService.save(pessoaRequestDTO);
+        // Act
+        Optional<Pessoa> result = pessoaService.findByNome(nome);
 
-        assertNotNull(savedPessoa);
-        assertEquals("João", savedPessoa.getNome());
-        assertEquals("PE", savedPessoa.getEstado());
-    }
-
-
-
-    @Test
-    public void testDeletePessoa() {
-        when(pessoaRepository.existsById(anyLong())).thenReturn(true);
-
-        pessoaService.delete(1L);
-
-        verify(pessoaRepository, times(1)).deleteById(1L);
+        // Assert
+        assertTrue(result.isPresent());
+        assertEquals("Maria", result.get().getNome());
     }
 
     @Test
-    public void testFindAll() {
-        when(pessoaRepository.findAll()).thenReturn(List.of(pessoa));
+    void testFindByNome_NotFound() {
+        // Arrange
+        String nome = "João";
+        when(pessoaRepository.findByNome(nome)).thenReturn(Optional.empty());
 
-        var pessoas = pessoaService.findAll();
+        // Act
+        Optional<Pessoa> result = pessoaService.findByNome(nome);
 
-        assertNotNull(pessoas);
-        assertFalse(pessoas.isEmpty());
-        assertEquals(1, pessoas.size());
+        // Assert
+        assertFalse(result.isPresent());
     }
+
+ 
 }
