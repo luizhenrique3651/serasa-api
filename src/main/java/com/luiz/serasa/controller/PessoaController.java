@@ -6,12 +6,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.luiz.serasa.dto.PessoaRequestDTO;
 import com.luiz.serasa.dto.PessoaResponseDTO;
 import com.luiz.serasa.entity.Pessoa;
 import com.luiz.serasa.service.PessoaService;
+import com.luiz.serasa.service.ScoreDescricaoService;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -23,13 +33,17 @@ public class PessoaController {
 
     @Autowired
     private PessoaService pessoaService;
+    @Autowired
+    private ScoreDescricaoService scoreDescricaoService;
 
     @Operation(description = "Carrega todos os objetos de Pessoa do banco.")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Lista de pessoas retornada com sucesso")})
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     @GetMapping
     public List<PessoaResponseDTO> loadAll() {
-        return pessoaService.findAll().stream().map(PessoaResponseDTO::new).toList();
+    	return pessoaService.findAll().stream()
+                .map(pessoa -> new PessoaResponseDTO(pessoa, scoreDescricaoService))
+                .toList();
     }
     
     @Operation(description = "Retorna uma lista de pessoas paginada e com filtros opcionais (nome, idade, cep).")
@@ -96,7 +110,7 @@ public class PessoaController {
     @GetMapping("/byNome")
     public ResponseEntity<PessoaResponseDTO> loadByNome(@RequestParam String nome) {
         return pessoaService.findByNome(nome)
-            .map(pessoa -> new ResponseEntity<>(new PessoaResponseDTO(pessoa), HttpStatus.OK))
+            .map(pessoa -> new ResponseEntity<>(new PessoaResponseDTO(pessoa, scoreDescricaoService), HttpStatus.OK))
             .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 }
