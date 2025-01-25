@@ -24,6 +24,7 @@ import com.luiz.serasa.service.ViaCepService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RestController
 @RequestMapping("/pessoa")
@@ -35,6 +36,7 @@ public class PessoaController {
     @Autowired
     private PessoaService pessoaService;
 
+    @SecurityRequirement(name = "BearerAuth")
     @Operation(description = "Carrega todos os objetos de Pessoa do banco.")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     @GetMapping
@@ -42,6 +44,7 @@ public class PessoaController {
         return pessoaService.findAll().stream().map(PessoaResponseDTO::new).toList();
     }
     
+    @SecurityRequirement(name = "BearerAuth")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Lista de pessoas retornada com sucesso")})
     @Operation(description = "Retorna uma lista de pessoas paginada e com filtros opcionais (nome, idade, cep).")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -56,6 +59,7 @@ public class PessoaController {
         return pessoaService.findAllPaginated(nome, idade, cep, page, size);
     }
 
+    @SecurityRequirement(name = "BearerAuth")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Pessoa salva com sucesso")})
     @Operation(description = "Salva uma nova Pessoa no banco.")
     @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -65,6 +69,7 @@ public class PessoaController {
         pessoaService.save(pessoa);
     }
 
+    @SecurityRequirement(name = "BearerAuth")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Pessoa atualizada com sucesso"),
         @ApiResponse(responseCode = "400", description = "Pessoa não encontrada")
@@ -76,6 +81,7 @@ public class PessoaController {
        pessoaService.update(id, new Pessoa(pessoaAtualizada));
     }
 
+    @SecurityRequirement(name = "BearerAuth")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Pessoa deletada com sucesso"),
         @ApiResponse(responseCode = "400", description = "Pessoa não encontrada")
@@ -87,6 +93,7 @@ public class PessoaController {
         pessoaService.delete(id);
     }
 
+    @SecurityRequirement(name = "BearerAuth")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Pessoa encontrada com sucesso"),
         @ApiResponse(responseCode = "404", description = "Pessoa não encontrada")
