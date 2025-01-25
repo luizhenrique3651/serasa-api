@@ -26,9 +26,10 @@ import com.luiz.serasa.service.ScoreDescricaoService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 
 @RestController
-@RequestMapping("pessoa")
+@RequestMapping("/pessoa")
 public class PessoaController {
 
     @Autowired
@@ -36,6 +37,7 @@ public class PessoaController {
     @Autowired
     private ScoreDescricaoService scoreDescricaoService;
 
+    @SecurityRequirement(name = "BearerAuth")
     @Operation(description = "Carrega todos os objetos de Pessoa do banco.")
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Lista de pessoas retornada com sucesso")})
     @CrossOrigin(origins = "*", allowedHeaders = "*")
@@ -46,8 +48,10 @@ public class PessoaController {
                 .toList();
     }
     
+
+    @SecurityRequirement(name = "BearerAuth")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Lista de pessoas retornada com sucesso")})
     @Operation(description = "Retorna uma lista de pessoas paginada e com filtros opcionais (nome, idade, cep).")
-    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Lista paginada de pessoas retornada com sucesso")})
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     @GetMapping("/paginado")
     public Page<Pessoa> getPessoasPaginadas(
@@ -60,8 +64,10 @@ public class PessoaController {
         return pessoaService.findAllPaginated(nome, idade, cep, page, size);
     }
 
+
+    @SecurityRequirement(name = "BearerAuth")
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Pessoa salva com sucesso")})
     @Operation(description = "Salva uma nova Pessoa no banco.")
-    @ApiResponses(value = {@ApiResponse(responseCode = "201", description = "Pessoa salva com sucesso")})
     @CrossOrigin(origins = "*", allowedHeaders = "*")
     @PostMapping
     public ResponseEntity<String> savePessoa(@RequestBody PessoaRequestDTO pessoa) {
@@ -69,6 +75,7 @@ public class PessoaController {
         return new ResponseEntity<>("Pessoa salva com sucesso.", HttpStatus.CREATED);
     }
 
+    @SecurityRequirement(name = "BearerAuth")
     @Operation(description = "Atualiza uma Pessoa no banco.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Pessoa atualizada com sucesso"),
@@ -85,7 +92,10 @@ public class PessoaController {
         }
     }
 
+
+    @SecurityRequirement(name = "BearerAuth")
     @Operation(description = "Deleta uma Pessoa pelo ID.")
+
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Pessoa deletada com sucesso"),
         @ApiResponse(responseCode = "400", description = "Pessoa não encontrada")
@@ -101,6 +111,7 @@ public class PessoaController {
         }
     }
 
+    @SecurityRequirement(name = "BearerAuth")
     @Operation(description = "Carrega uma Pessoa pelo nome.")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Pessoa encontrada com sucesso"),
